@@ -11,6 +11,7 @@ interface VerdictReportModalProps {
   ideaText: string;
   onUsePivot?: (pivot: string) => void;
   onAnotherPivot?: () => Promise<string>;
+  onOpenCertificate?: () => void;
 }
 
 export default function VerdictReportModal({
@@ -20,6 +21,7 @@ export default function VerdictReportModal({
   ideaText,
   onUsePivot,
   onAnotherPivot,
+  onOpenCertificate,
 }: VerdictReportModalProps) {
   const [copied, setCopied] = useState(false);
   const [pivotVisible, setPivotVisible] = useState(true);
@@ -200,6 +202,44 @@ ${report.judgeQuestions.map((item) => `- Q: ${item.question}\n  A: ${item.respon
           </p>
         </div>
 
+        {/* Detective Heron Web Dossier */}
+        {report.researcherNotes && (
+          <div className="mb-6 p-4 rounded-2xl bg-slate-50 border-[2px] border-slate-300">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 mb-1.5 flex items-center gap-1.5">
+              <span>🔍</span>
+              <span>Detective Heron · Independent Web Dossier (Prior Art Check)</span>
+            </h3>
+            <p className="text-xs font-medium text-slate-700 leading-relaxed">
+              {report.researcherNotes}
+            </p>
+            {report.priorArt && report.priorArt.length > 0 && (
+              <div className="mt-2.5 pt-2 border-t border-slate-200">
+                <span className="text-[10px] font-bold uppercase text-slate-500 block mb-1">
+                  Public Repositories Examined:
+                </span>
+                <div className="space-y-1">
+                  {report.priorArt.map((item, idx) => (
+                    <div key={idx} className="text-[11px] text-slate-600 flex items-center gap-2">
+                      <span className="font-semibold text-slate-900">• {item.title}:</span>
+                      <span className="truncate">{item.description}</span>
+                      {item.url && (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 hover:underline shrink-0 text-[10px]"
+                        >
+                          view repo ↗
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Side-by-side Strengths vs Flaws */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {/* Strengths */}
@@ -312,7 +352,17 @@ ${report.judgeQuestions.map((item) => `- Q: ${item.question}\n  A: ${item.respon
 
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-200">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {onOpenCertificate && (
+              <button
+                onClick={onOpenCertificate}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-colors"
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>📜 Stamped Certificate</span>
+              </button>
+            )}
+
             <button
               onClick={handleCopy}
               className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold border border-gray-300 flex items-center gap-1.5 transition-colors"

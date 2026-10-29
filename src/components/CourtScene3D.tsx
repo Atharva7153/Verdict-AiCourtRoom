@@ -4,10 +4,11 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CourtMessage } from "@/app/api/court/route";
+import ComicActionOverlay from "./ComicActionOverlay";
 
 interface CourtScene3DProps {
   currentMessage: CourtMessage | null;
-  cameraPreset: "overview" | "judge" | "defense" | "prosecutor" | "jury";
+  cameraPreset: "overview" | "judge" | "defense" | "prosecutor" | "jury" | "researcher";
   onSelectCharacter?: (role: string) => void;
   replayToken?: number;
 }
@@ -26,6 +27,7 @@ export default function CourtScene3D({
     judge?: THREE.Group;
     defense?: THREE.Group;
     prosecutor?: THREE.Group;
+    researcher?: THREE.Group;
     jurors?: THREE.Group[];
   }>({});
   const speechBubbleWorldPos = useRef<{
@@ -592,19 +594,121 @@ export default function CourtScene3D({
     scene.add(prosecutorParrot);
     charactersRef.current.prosecutor = prosecutorParrot;
 
-    // D. JUROR BIRDS (Cute little birds sitting in jury box)
+    // D. DETECTIVE HERON (Court Web Researcher)
+    // Sits at investigator podium on the right side of the judicial bench
+    const heronGroup = new THREE.Group();
+    heronGroup.position.set(2.4, 0.9, -0.6);
+    heronGroup.name = "researcher";
+
+    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 1.0, 16), woodDarkMat);
+    stand.position.set(0, -0.4, 0.35);
+    stand.castShadow = true;
+    heronGroup.add(stand);
+
+    // Mini dossier folder on stand
+    const dossier = new THREE.Mesh(
+      new THREE.BoxGeometry(0.28, 0.04, 0.22),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 })
+    );
+    dossier.position.set(0, 0.12, 0.35);
+    dossier.rotation.y = 0.2;
+    heronGroup.add(dossier);
+
+    // Heron Body (Slate Blue / Grey Plumage)
+    const heronBodyMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6 });
+    const heronBody = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.9, 16), heronBodyMat);
+    heronBody.position.set(0, 0.45, 0);
+    heronBody.castShadow = true;
+    heronGroup.add(heronBody);
+
+    // White Chest / Trenchcoat Lapel
+    const heronChest = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18, 0.22, 0.7, 16, 1, false, -Math.PI / 3, (Math.PI * 2) / 3),
+      new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.5 })
+    );
+    heronChest.position.set(0, 0.48, 0.12);
+    heronGroup.add(heronChest);
+
+    // Heron Long Elegant Neck & Head
+    const heronNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.45, 12), heronBodyMat);
+    heronNeck.position.set(0, 1.05, 0.05);
+    heronGroup.add(heronNeck);
+
+    const heronHead = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), heronBodyMat);
+    heronHead.position.set(0, 1.32, 0.08);
+    heronHead.name = "heronHead";
+    heronHead.castShadow = true;
+    heronGroup.add(heronHead);
+
+    // Long Slender Detective Beak
+    const heronBeak = new THREE.Mesh(
+      new THREE.ConeGeometry(0.06, 0.5, 12),
+      new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3 })
+    );
+    heronBeak.rotation.x = Math.PI / 2.1;
+    heronBeak.position.set(0, 1.28, 0.38);
+    heronGroup.add(heronBeak);
+
+    // Fedora Hat (Dark Charcoal with Gold Band)
+    const hatBrim = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.36, 0.38, 0.03, 16),
+      new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 })
+    );
+    hatBrim.position.set(0, 1.48, 0.08);
+    hatBrim.rotation.x = 0.08;
+    heronGroup.add(hatBrim);
+
+    const hatCrown = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.24, 0.22, 16),
+      new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 })
+    );
+    hatCrown.position.set(0, 1.6, 0.07);
+    hatCrown.rotation.x = 0.08;
+    heronGroup.add(hatCrown);
+
+    const hatBand = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.23, 0.04, 16),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4 })
+    );
+    hatBand.position.set(0, 1.52, 0.075);
+    hatBand.rotation.x = 0.08;
+    heronGroup.add(hatBand);
+
+    // Magnifying glass in wing
+    const glassRim = new THREE.Mesh(
+      new THREE.TorusGeometry(0.08, 0.015, 8, 16),
+      new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8 })
+    );
+    glassRim.position.set(0.32, 0.55, 0.3);
+    glassRim.rotation.y = -0.4;
+    heronGroup.add(glassRim);
+
+    const glassHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.16, 8), woodDarkMat);
+    glassHandle.position.set(0.32, 0.45, 0.26);
+    glassHandle.rotation.x = 0.3;
+    heronGroup.add(glassHandle);
+
+    heronGroup.lookAt(-1.5, 1.5, 3.0);
+    scene.add(heronGroup);
+    charactersRef.current.researcher = heronGroup;
+
+    // E. 6 INDEPENDENT JUROR BIRDS (Vibrant jury council in jury box)
     charactersRef.current.jurors = [];
     const jurorDefs = [
-      { x: -6.4, y: 0.85, z: -3.2, color: 0x9e7855, size: 0.24, label: "Sparrow" }, // Sparrow
-      { x: -5.4, y: 0.85, z: -3.2, color: 0x222226, size: 0.28, label: "Penguin", tie: true }, // Penguin in tie!
-      { x: -4.4, y: 0.85, z: -3.2, color: 0x4fa3e3, size: 0.22, label: "Bluebird" }, // Bluebird
-      { x: -6.0, y: 1.4, z: -4.5, color: 0x7c5030, size: 0.32, label: "Falcon" }, // Falcon
+      // Front row (Tier 1)
+      { x: -6.4, y: 0.85, z: -3.2, color: 0x06b6d4, size: 0.22, label: "Lady Pixel (Hummingbird)" },
+      { x: -5.4, y: 0.85, z: -3.2, color: 0x475569, size: 0.28, label: "Eagle Eye (Cyber-Hawk)", visor: true },
+      { x: -4.4, y: 0.85, z: -3.2, color: 0x84cc16, size: 0.24, label: "Spark (Kea Parrot)", tie: true },
+      // Elevated back row (Tier 2)
+      { x: -6.4, y: 1.4, z: -4.5, color: 0xd97706, size: 0.28, label: "Sage (Barn Owl)" },
+      { x: -5.4, y: 1.4, z: -4.5, color: 0xf1f5f9, size: 0.32, label: "Barnaby TAM Pelican", pelican: true },
+      { x: -4.4, y: 1.4, z: -4.5, color: 0x0f172a, size: 0.24, label: "Rustle (Woodpecker)", crest: true },
     ];
 
     jurorDefs.forEach((j) => {
       const bird = new THREE.Group();
       bird.position.set(j.x, j.y, j.z);
-      bird.lookAt(0, 1.5, 0); // Face judge & lawyers
+      bird.lookAt(0, 1.5, 0);
 
       const bBody = new THREE.Mesh(
         new THREE.SphereGeometry(j.size, 16, 16),
@@ -622,20 +726,39 @@ export default function CourtScene3D({
       bird.add(bHead);
 
       const bBeak = new THREE.Mesh(
-        new THREE.ConeGeometry(j.size * 0.25, j.size * 0.5, 8),
-        new THREE.MeshStandardMaterial({ color: 0xf59e0b })
+        new THREE.ConeGeometry(j.size * 0.25, (j as any).pelican ? j.size * 0.8 : j.size * 0.5, 8),
+        new THREE.MeshStandardMaterial({ color: (j as any).pelican ? 0xf59e0b : 0xf59e0b })
       );
       bBeak.rotation.x = Math.PI / 2;
       bBeak.position.set(0, j.size * 0.9, j.size * 1.05);
       bird.add(bBeak);
 
-      if (j.tie) {
+      // Unique accessories
+      if ((j as any).tie) {
         const miniTie = new THREE.Mesh(
           new THREE.BoxGeometry(0.08, 0.18, 0.02),
           new THREE.MeshBasicMaterial({ color: 0xef4444 })
         );
         miniTie.position.set(0, j.size * 0.45, j.size * 0.75);
         bird.add(miniTie);
+      }
+      if ((j as any).visor) {
+        const visor = new THREE.Mesh(
+          new THREE.BoxGeometry(0.18, 0.05, 0.08),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+        );
+        visor.position.set(0, j.size * 1.05, j.size * 0.65);
+        bird.add(visor);
+      }
+      if ((j as any).crest) {
+        // Woodpecker bright red punk crest!
+        const crest = new THREE.Mesh(
+          new THREE.ConeGeometry(0.08, 0.22, 6),
+          new THREE.MeshBasicMaterial({ color: 0xef4444 })
+        );
+        crest.rotation.x = -0.4;
+        crest.position.set(0, j.size * 1.5, -0.02);
+        bird.add(crest);
       }
 
       scene.add(bird);
@@ -726,6 +849,10 @@ export default function CourtScene3D({
         targetCamPos.current.set(3.2, 2.6, 5.0);
         targetCamLook.current.set(4.5, 2.2, 1.8);
         break;
+      case "researcher":
+        targetCamPos.current.set(1.5, 2.5, 2.4);
+        targetCamLook.current.set(2.4, 1.8, -0.6);
+        break;
       case "jury":
         targetCamPos.current.set(-3.2, 3.2, -0.8);
         targetCamLook.current.set(-5.6, 2.0, -3.2);
@@ -738,9 +865,10 @@ export default function CourtScene3D({
     }
   }, [cameraPreset]);
 
-  // Auto-focus camera on current speaker if user hasn't locked camera
+  // Auto-focus camera on current speaker and execute punch-ins
   useEffect(() => {
     if (!currentMessage) return;
+
     if (cameraPreset === "overview") {
       if (currentMessage.speaker === "judge") {
         targetCamLook.current.set(0, 2.6, -0.6);
@@ -748,40 +876,89 @@ export default function CourtScene3D({
         targetCamLook.current.set(-4.2, 2.2, 1.8);
       } else if (currentMessage.speaker === "prosecutor") {
         targetCamLook.current.set(4.2, 2.2, 1.8);
+      } else if (currentMessage.speaker === "researcher") {
+        targetCamLook.current.set(2.4, 1.8, -0.6);
       } else if (currentMessage.speaker.startsWith("juror")) {
-        targetCamLook.current.set(-5.2, 2.2, -3.0);
+        targetCamLook.current.set(-5.4, 2.0, -3.5);
       }
+    }
+
+    // Dynamic Camera Punch-in: Instant dramatic zoom on Objections & Verdicts
+    if (currentMessage.type === "objection") {
+      targetCamPos.current.set(3.0, 2.4, 3.8);
+      targetCamLook.current.set(4.5, 2.2, 1.8);
+    } else if (currentMessage.type === "verdict") {
+      targetCamPos.current.set(0, 3.4, 4.0);
+      targetCamLook.current.set(0, 2.8, -0.6);
+    } else if (currentMessage.type === "ruling") {
+      targetCamPos.current.set(0, 3.6, 4.6);
+      targetCamLook.current.set(0, 3.0, -0.6);
+    } else if (currentMessage.speaker === "researcher") {
+      targetCamPos.current.set(1.6, 2.4, 2.2);
+      targetCamLook.current.set(2.4, 1.8, -0.6);
+    } else if (currentMessage.phase === "deliberation") {
+      targetCamPos.current.set(-3.0, 3.0, -0.5);
+      targetCamLook.current.set(-5.4, 1.8, -3.8);
     }
   }, [currentMessage, cameraPreset]);
 
   useEffect(() => {
     const active = currentMessage?.speaker;
     const characters = charactersRef.current;
-    (["judge", "defense", "prosecutor"] as const).forEach((role) => {
+    (["judge", "defense", "prosecutor", "researcher"] as const).forEach((role) => {
       const group = characters[role];
-      if (group) group.scale.setScalar(active === role ? 1.08 : 1);
+      if (group) group.scale.setScalar(active === role ? 1.1 : 1);
     });
     characters.jurors?.forEach((group, index) => {
-      const activeIndex = active?.startsWith("juror") ? Number(active.slice(-1)) - 1 : -1;
-      group.scale.setScalar(activeIndex === index ? 1.22 : 1);
+      const activeIndex = active?.startsWith("juror") ? Number(active.slice(5)) - 1 : -1;
+      group.scale.setScalar(activeIndex === index ? 1.25 : 1);
     });
   }, [currentMessage]);
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden">
+    <div
+      className={`relative w-full h-full select-none overflow-hidden ${
+        currentMessage?.type === "objection" ? "animate-court-shake" : ""
+      }`}
+    >
       {/* 3D Canvas Container */}
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
-      {currentMessage && <div key={`${currentMessage.speaker}-${currentMessage.timestamp}-${replayToken}`} className="absolute inset-0 pointer-events-none">
-        <article role="status" aria-live="polite" aria-atomic="true" className={`message-bubble bubble-${currentMessage.speaker} bubble-${currentMessage.type} ${/charges|first-degree|vaporware/i.test(currentMessage.text)?"bubble-accusation":""}`}>
-          <header><span aria-hidden="true" className="speaker-seal">{currentMessage.speakerName.slice(0,1)}</span><span><b>{currentMessage.speakerName}</b><small>{currentMessage.role} · {currentMessage.phase?.replaceAll("-"," ")}</small></span></header>
-          {currentMessage.type === "objection" && <strong className="bubble-event objection-label">OBJECTION</strong>}
-          {currentMessage.type === "ruling" && <strong className="bubble-event ruling-label">THE COURT RULES</strong>}
-          {currentMessage.type === "order" && <strong className="bubble-event ruling-label">ORDER IN THE COURT</strong>}
-          {currentMessage.type === "verdict" && <strong className="bubble-event verdict-label">FINAL VERDICT</strong>}
-          <p>{currentMessage.text}</p>
-        </article>
-      </div>}
+      {/* Manga / Comic Speedlines & Punch-in Overlay */}
+      <ComicActionOverlay currentMessage={currentMessage} replayToken={replayToken} />
+
+      {currentMessage && (
+        <div
+          key={`${currentMessage.speaker}-${currentMessage.timestamp}-${replayToken}`}
+          className="absolute inset-0 pointer-events-none"
+        >
+          <article
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className={`message-bubble bubble-${currentMessage.speaker} bubble-${currentMessage.type} ${
+              /charges|first-degree|vaporware/i.test(currentMessage.text) ? "bubble-accusation" : ""
+            }`}
+          >
+            <header>
+              <span aria-hidden="true" className="speaker-seal">
+                {currentMessage.speakerName.slice(0, 1)}
+              </span>
+              <span>
+                <b>{currentMessage.speakerName}</b>
+                <small>
+                  {currentMessage.role} · {currentMessage.phase?.replaceAll("-", " ")}
+                </small>
+              </span>
+            </header>
+            {currentMessage.type === "objection" && <strong className="bubble-event objection-label">OBJECTION</strong>}
+            {currentMessage.type === "ruling" && <strong className="bubble-event ruling-label">THE COURT RULES</strong>}
+            {currentMessage.type === "order" && <strong className="bubble-event ruling-label">ORDER IN THE COURT</strong>}
+            {currentMessage.type === "verdict" && <strong className="bubble-event verdict-label">FINAL VERDICT</strong>}
+            <p>{currentMessage.text}</p>
+          </article>
+        </div>
+      )}
 
       {/* Camera Guidance Pill */}
       <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-300 text-xs text-gray-600 shadow-sm flex items-center gap-2 pointer-events-none">

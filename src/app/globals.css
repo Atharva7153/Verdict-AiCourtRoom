@@ -23,3 +23,26 @@
 .message-bubble::after{z-index:0}.message-bubble header,.message-bubble p,.message-bubble .bubble-event{position:relative;z-index:1}@keyframes bubbleIn{from{opacity:0}to{opacity:1}}
 .focus-control{height:33px;display:flex;align-items:center;gap:5px;padding:0 8px;border:1px solid #ddd5c8;border-radius:4px;background:#faf8f2;color:#78746b;font-size:9px;font-weight:700}.focus-control select{max-width:112px;border:0;background:transparent;color:#394441;font-size:10px;font-weight:700;outline:none;cursor:pointer}.focus-control select:focus-visible{outline-offset:0}
 @media(max-width:600px){.focus-control{padding:0 5px;gap:3px;font-size:8px}.focus-control select{max-width:86px;font-size:9px}.control-progress{grid-column:1;grid-row:1}.control-actions{gap:4px}.control-actions .focus-control{position:absolute;top:7px;left:9px;height:28px}.control-deck{position:relative;padding-top:42px}.control-progress .eyebrow{font-size:7px}}
+
+/* Researcher & Expanded Jury styling */
+.bubble-researcher{top:16%;right:16%;--tail-x:50%;border-color:#334155;background:#f8fafc!important}
+.bubble-researcher .speaker-seal{background:#cbd5e1;color:#0f172a}
+.researcher-chip i{background:#cbd5e1;color:#1e293b}
+.bubble-juror1,.bubble-juror2,.bubble-juror3,.bubble-juror4,.bubble-juror5,.bubble-juror6{top:15%;left:7%;--tail-x:20%}
+
+/* Screen Shake & Manga Comic Speedline Keyframes */
+.animate-court-shake{animation:courtShake .45s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes courtShake{
+  10%,90%{transform:translate3d(-3px,1px,0)}
+  20%,80%{transform:translate3d(4px,-2px,0)}
+  30%,50%,70%{transform:translate3d(-4px,3px,0)}
+  40%,60%{transform:translate3d(3px,-2px,0)}
+}
+.animate-comic-burst{animation:comicBurst .4s ease-out forwards}
+@keyframes comicBurst{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:scale(1)}}
+.animate-punch-in{animation:punchIn .35s cubic-bezier(.175,.885,.32,1.275) both}
+@keyframes punchIn{
+  0%{opacity:0;transform:scale(.35) rotate(-9deg)}
+  75%{transform:scale(1.06) rotate(-1deg)}
+  100%{opacity:1;transform:scale(1) rotate(-2deg)}
+}
